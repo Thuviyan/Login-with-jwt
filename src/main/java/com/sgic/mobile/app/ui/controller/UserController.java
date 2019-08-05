@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sgic.mobile.app.exceptions.UserServiceException;
 import com.sgic.mobile.app.service.UserService;
 import com.sgic.mobile.app.shared.dto.UserDto;
 import com.sgic.mobile.app.ui.model.request.UserDetailsRequestModel;
+import com.sgic.mobile.app.ui.model.response.ErrorMessages;
 import com.sgic.mobile.app.ui.model.response.UserRest;
 
 @RestController
@@ -37,9 +39,11 @@ public class UserController {
 	@PostMapping(
 			consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
 			produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
-	public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails)
+	public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) throws Exception
 	{
 		UserRest returnValue = new UserRest();
+		
+		if(userDetails.getFirstName().isEmpty()) throw new NullPointerException("The Object is null");
 		
 		UserDto userDto = new UserDto();
 		BeanUtils.copyProperties(userDetails, userDto);
