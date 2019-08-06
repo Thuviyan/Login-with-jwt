@@ -17,6 +17,8 @@ import com.sgic.mobile.app.service.UserService;
 import com.sgic.mobile.app.shared.dto.UserDto;
 import com.sgic.mobile.app.ui.model.request.UserDetailsRequestModel;
 import com.sgic.mobile.app.ui.model.response.ErrorMessages;
+import com.sgic.mobile.app.ui.model.response.OperationStatusModel;
+import com.sgic.mobile.app.ui.model.response.RequestOperationStatus;
 import com.sgic.mobile.app.ui.model.response.UserRest;
 
 @RestController
@@ -67,8 +69,15 @@ public class UserController {
 		return returnValue;
 	}
 
-	@DeleteMapping
-	public String deleteUser() {
-		return "delete";
+	@DeleteMapping(path = "/{id}",
+			produces = { MediaType.APPLICATION_XML_VALUE,
+					MediaType.APPLICATION_JSON_VALUE })
+	public OperationStatusModel deleteUser(@PathVariable String id) {
+		
+		OperationStatusModel returnValue = new OperationStatusModel();
+		returnValue.setOperationName(RequestOperationName.DELETE.name());
+		userService.deleteUser(id);
+		returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+		return returnValue;
 	}
 }
