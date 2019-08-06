@@ -1,5 +1,8 @@
 package com.sgic.mobile.app.ui.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -10,13 +13,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sgic.mobile.app.exceptions.UserServiceException;
 import com.sgic.mobile.app.service.UserService;
 import com.sgic.mobile.app.shared.dto.UserDto;
 import com.sgic.mobile.app.ui.model.request.UserDetailsRequestModel;
-import com.sgic.mobile.app.ui.model.response.ErrorMessages;
 import com.sgic.mobile.app.ui.model.response.OperationStatusModel;
 import com.sgic.mobile.app.ui.model.response.RequestOperationStatus;
 import com.sgic.mobile.app.ui.model.response.UserRest;
@@ -78,6 +80,22 @@ public class UserController {
 		returnValue.setOperationName(RequestOperationName.DELETE.name());
 		userService.deleteUser(id);
 		returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+		return returnValue;
+	}
+	
+	@GetMapping(produces = {
+			MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public List<UserRest> getUsers(@RequestParam(value="page", defaultValue="0") int page,
+			@RequestParam(value="limit", defaultValue="2") int limit)
+	{
+		List<UserRest> returnValue = new ArrayList<>();
+		List<UserDto> users = userService.getUsers(page, limit);
+		
+		for(UserDto userDto : users) {
+			UserRest userModel = new UserRest();
+			BeanUtils.copyProperties(userDto, userModel);
+			returnValue.add(userModel);
+		}
 		return returnValue;
 	}
 }
