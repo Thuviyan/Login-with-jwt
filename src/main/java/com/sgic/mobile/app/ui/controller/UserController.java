@@ -3,6 +3,8 @@ package com.sgic.mobile.app.ui.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,9 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sgic.mobile.app.service.AddressService;
 import com.sgic.mobile.app.service.UserService;
+import com.sgic.mobile.app.shared.dto.AddressDTO;
 import com.sgic.mobile.app.shared.dto.UserDto;
 import com.sgic.mobile.app.ui.model.request.UserDetailsRequestModel;
+import com.sgic.mobile.app.ui.model.response.AddressesRest;
 import com.sgic.mobile.app.ui.model.response.OperationStatusModel;
 import com.sgic.mobile.app.ui.model.response.RequestOperationStatus;
 import com.sgic.mobile.app.ui.model.response.UserRest;
@@ -29,6 +34,9 @@ public class UserController {
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	AddressService addressesService;
 
 	@GetMapping(path = "/{id}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public UserRest getUser(@PathVariable String id) {
@@ -46,11 +54,15 @@ public class UserController {
 		if (userDetails.getFirstName().isEmpty())
 			throw new NullPointerException("The Object is null");
 
-		UserDto userDto = new UserDto();
-		BeanUtils.copyProperties(userDetails, userDto);
+//		UserDto userDto = new UserDto();
+//		BeanUtils.copyProperties(userDetails, userDto);
+		
+		ModelMapper modelMapper = new ModelMapper();
+		UserDto userDto = modelMapper.map(userDetails,UserDto.class);
 
 		UserDto createdUser = userService.createUser(userDto);
-		BeanUtils.copyProperties(createdUser, returnValue);
+		returnValue = modelMapper.map(createdUser, UserRest.class);
+		
 		return returnValue;
 	}
 
@@ -97,5 +109,28 @@ public class UserController {
 			returnValue.add(userModel);
 		}
 		return returnValue;
+	}
+	
+	@GetMapping(path = "/{id}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public List<AddressesRest> getUserAddresses(@PathVariable String id) {
+		List<AddressesRest> returnValue = new ArrayList<>();
+		List<AddressDTO> addressDTO=addressesService.getAddresses(id);
+		
+		if(addressDTO !=null && !addressDTO.isEmpty()) {
+			java.lang.reflect.Type listType=new TypeToken<List<AddressesRest>>() {}.getType();
+			ModelMapper modelMapper=new ModelMapper();
+			returnValue=new ModelMapper().map(addressDTO, listType);
+		}
+		return returnValue;
+	}
+	
+	@GetMapping(path = "/{userId}/addresses/{addressId}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public AddressesRest getUserAddress(@PathVariable String addressId) {
+	
+		AddressDTO addressDTO=addressesService.getAddress(addressId);
+		
+		ModelMapper modelMapper=new ModelMapper();
+		
+		return modelMapper.map(addressDTO, AddressesRest.class);
 	}
 }
